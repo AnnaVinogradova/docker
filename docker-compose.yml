@@ -1,0 +1,48 @@
+version: '3'
+services:
+    mysql:
+        image: mysql
+        command: --default-authentication-plugin=mysql_native_password
+        restart: always
+        volumes:
+            - ./db_data:/var/lib/mysql
+        environment:
+            MYSQL_ROOT_PASSWORD: access
+        ports:
+            - 3306:3306
+        networks:
+            - web_server
+
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        container_name: phpmyadmin
+        environment:
+            PMA_ARBITRARY: 1
+            PMA_HOST: mysql
+        restart: always
+        ports:
+            - 8080:80
+        depends_on:
+            - mysql
+        networks:
+            - web_server 
+
+    web:
+        build:
+            context: ./build/php
+        ports:
+            - 80:80
+        volumes:
+            - ./:/var/www/html
+        restart: always
+        depends_on:
+            - mysql
+        networks:
+            - web_server
+
+networks:
+  web_server:
+    driver: bridge
+
+volumes:
+  mysql:
